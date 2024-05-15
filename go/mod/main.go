@@ -12,10 +12,10 @@ import (
 const INDEX = `<!DOCTYPE html>
 <html>
   <head>
-    <title>Powered By Paketo Buildpacks</title>
+    <title>Initaliz-Buildpack Securepack</title>
   </head>
   <body>
-    <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="https://paketo.io/images/paketo-logo-full-color.png"></img>
+    <img style="display: block; margin-left: auto; margin-right: auto; width: 50%;" src="https://nkspknddghh.s3.ap-south-1.amazonaws.com/securepacks.png"></img>
   </body>
 </html>`
 
