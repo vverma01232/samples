@@ -1,5 +1,5 @@
 {
-  "author": "Paketo Buildpacks",
+  "author": "Initializ Buildpacks",
   "dependencies": {
     "express": "^4.19.2"
   },

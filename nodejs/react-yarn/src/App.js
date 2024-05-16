@@ -4,7 +4,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src="https://paketo.io/images/paketo-logo-full-color.png" className="App-logo" />
+        <img src="https://nkspknddghh.s3.ap-south-1.amazonaws.com/securepacks.png" className="App-logo" />
       </header>
     </div>
   );

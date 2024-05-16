@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Powered By Paketo Buildpacks"/>
+    <HelloWorld msg="Powered By Initializ Buildpacks"/>
   </div>
 </template>
 
