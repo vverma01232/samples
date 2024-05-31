@@ -1,69 +1,49 @@
-name: Test the builder 
+name: Build and Deploy with Buildpacks
 
 on:
   workflow_dispatch:
     inputs:
-      path:
-         description: 'Source code path'
-         required: true
-         type: string
-      name:
-         description: 'Name of image'
-         required: true
-         type: string
-
-permissions:
-  id-token: write
-  contents: read
+      image_name:
+        description: 'Desired name for the Docker image'
+        required: true
+      directory:
+        description: 'Select the directory to build'
+        required: true
+        type: choice
+        options:
+          - go/mod
+          - go/no-imports
+          - nodejs/angular-npm
+          - nodejs/no-package-manager
+          - nodejs/npm
+          - nodejs/react-yarn
+          - nodejs/vue-npm
+          - nodejs/yarn
 
 jobs:
-  image-build:
+  build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: .
     steps:
-      - name: Git checkout
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}  
+    - name: Install Pack CLI
+      run: |
+        sudo add-apt-repository ppa:cncf-buildpacks/pack-cli -y
+        sudo apt-get update
+        sudo apt-get install pack-cli -y
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.20"
-
-      - name: Set up Pack CLI
-        uses: buildpacks/github-actions/setup-pack@v5.5.3
-        with:
-          version: 0.33.2
-
-      - name: Pull the builder
-        run: |
-          docker pull initializbuildpacks/initializ-builder:latest
-
-      - name: Setup the default builder
-        run: |
-          pack config default-builder initializbuildpacks/initializ-builder:latest
-
-      - name: Build the image 
-        run: |
-          pack build ${{ inputs.name }}:latest --path ${{ inputs.path }}
-
-      - name: Run the image
-        run: |
-          docker run --interactive --tty --env PORT=8080 --publish 8080:8080 ${{ inputs.name }}:latest
-
-      - name: Test the image
-        run: |
-          curl http://localhost:8080
-
-      - name: Stop and remove the container
-        run: |
-          docker stop $(docker ps -q --filter ancestor=${{ inputs.name }}:latest)
-          docker rm $(docker ps -aq --filter ancestor=${{ inputs.name }}:latest)
+    - name: Build and push Docker image using Buildpacks
+      run: |
+        image_name_with_tag="${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
+        cd "${{ github.workspace }}/${{ github.event.inputs.directory }}"
+        pack build $image_name_with_tag --builder initializbuildpacks/securepacks
+        docker push $image_name_with_tag
+    - name: Display Docker Image URI
+      run: |
+        echo "::notice title=Docker Image URI::${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
