@@ -1,4 +1,4 @@
-name: Build and Deploy with Buildpacks
+name: Try-Securepacks
 
 on:
   workflow_dispatch:
