@@ -12,5 +12,5 @@ Discover a compilation of sample applications tailored for SecurePacks, ensuring
 
 In actions run "try-securepack" workflow with appropiate details and after workflow success you can pull your image 
 ```
-docker pull naveen871/<Desired name for the Docker image> 
+docker pull naveen871/< Desired name for the Docker image > 
 ```
