@@ -1,5 +1,5 @@
 name: Try-Securepacks
- 
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ on:
       desired_directory:
         description: 'Desired directory to build from (optional, leave empty to use current directory)'
         required: false
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,10 +21,12 @@ jobs:
       run: |
         git clone ${{ github.event.inputs.repo_url }} repo 
     - name: Send start notification
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: |
-        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST $WEBHOOK_URL \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "started"}')
+        -d '{"run_id": "${{ github.run_id }}", "status": "started", "image_name": "${{ github.event.inputs.image_name }}"}')
         cat response.txt
         if [ "$response" -ne 200 ]; then
           echo "Failed to send start notification. HTTP status: $response"
@@ -32,7 +34,7 @@ jobs:
         fi
     - name: Grype installation
       run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin     
+        curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
     - name: Set up environment variable for directory
       id: set-dir
       run: |
@@ -65,13 +67,15 @@ jobs:
         echo "::notice title=Docker Image URI::${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
     - name: Run grype
       run: |
-          grype ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest 
+        grype ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest
     - name: Send success notification
       if: success()
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: |
-        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST $WEBHOOK_URL \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "completed"}')
+        -d '{"run_id": "${{ github.run_id }}", "status": "completed", "image_name": "${{ github.event.inputs.image_name }}"}')
         cat response.txt
         if [ "$response" -ne 200 ]; then
           echo "Failed to send success notification. HTTP status: $response"
@@ -79,10 +83,12 @@ jobs:
         fi
     - name: Send failure notification
       if: failure()
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: |
-        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST $WEBHOOK_URL \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "failed"}')
+        -d '{"run_id": "${{ github.run_id }}", "status": "failed", "image_name": "${{ github.event.inputs.image_name }}"}')
         cat response.txt
         if [ "$response" -ne 200 ]; then
           echo "Failed to send failure notification. HTTP status: $response"
