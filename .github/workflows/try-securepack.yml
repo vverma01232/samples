@@ -22,9 +22,14 @@ jobs:
         git clone ${{ github.event.inputs.repo_url }} repo 
     - name: Send start notification
       run: |
-        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "started"}'
+        -d '{"run_id": "${{ github.run_id }}", "status": "started"}')
+        cat response.txt
+        if [ "$response" -ne 200 ]; then
+          echo "Failed to send start notification. HTTP status: $response"
+          exit 1
+        fi
     - name: Grype installation
       run: |
           curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin     
@@ -64,12 +69,22 @@ jobs:
     - name: Send success notification
       if: success()
       run: |
-        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "completed"}'
+        -d '{"run_id": "${{ github.run_id }}", "status": "completed"}')
+        cat response.txt
+        if [ "$response" -ne 200 ]; then
+          echo "Failed to send success notification. HTTP status: $response"
+          exit 1
+        fi
     - name: Send failure notification
       if: failure()
       run: |
-        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
+        response=$(curl -w "%{http_code}" -o response.txt -s -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "failed"}'
+        -d '{"run_id": "${{ github.run_id }}", "status": "failed"}')
+        cat response.txt
+        if [ "$response" -ne 200 ]; then
+          echo "Failed to send failure notification. HTTP status: $response"
+          exit 1
+        fi
