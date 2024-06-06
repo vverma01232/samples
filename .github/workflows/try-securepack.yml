@@ -1,5 +1,5 @@
 name: Try-Securepacks
- 
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ on:
       desired_directory:
         description: 'Desired directory to build from (optional, leave empty to use current directory)'
         required: false
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,14 +20,10 @@ jobs:
     - name: Clone specified repository
       run: |
         git clone ${{ github.event.inputs.repo_url }} repo 
-    - name: Send start notification
-      run: |
-        curl -X POST http://localhost:3001/workflow-status \
-        -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "started"}'
     - name: Grype installation
       run: |
           curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin     
+
     - name: Set up environment variable for directory
       id: set-dir
       run: |
@@ -36,40 +32,34 @@ jobs:
         else
           echo "##[set-output name=dir;]repo/${{ github.event.inputs.desired_directory }}"
         fi
+
     - name: Change directory if specified
       run: |
         cd ${{ steps.set-dir.outputs.dir }}
+        
     - name: Install Pack CLI
       run: |
         sudo add-apt-repository ppa:cncf-buildpacks/pack-cli -y
         sudo apt-get update
         sudo apt-get install pack-cli -y
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
     - name: Build and push Docker image using Buildpacks
       run: |
         image_name_with_tag="${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
         cd ${{ steps.set-dir.outputs.dir }}
         pack build $image_name_with_tag --builder initializbuildpacks/securepacks
         docker push $image_name_with_tag
+
     - name: Display Docker Image URI
       run: |
         echo "::notice title=Docker Image URI::${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
+
     - name: Run grype
       run: |
-          grype ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest 
-    - name: Send success notification
-      if: success()
-      run: |
-        curl -X POST http://localhost:3001/workflow-status \
-        -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "completed"}'
-    - name: Send failure notification
-      if: failure()
-      run: |
-        curl -X POST http://localhost:3001/workflow-status \
-        -H "Content-Type: application/json" \
-        -d '{"run_id": "${{ github.run_id }}", "status": "failed"}'
+          grype ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest     
