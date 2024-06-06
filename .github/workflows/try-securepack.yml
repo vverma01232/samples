@@ -22,7 +22,7 @@ jobs:
         git clone ${{ github.event.inputs.repo_url }} repo 
     - name: Send start notification
       run: |
-        curl -X POST http://localhost:3001/workflow-status \
+        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
         -d '{"run_id": "${{ github.run_id }}", "status": "started"}'
     - name: Grype installation
@@ -64,12 +64,12 @@ jobs:
     - name: Send success notification
       if: success()
       run: |
-        curl -X POST http://localhost:3001/workflow-status \
+        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
         -d '{"run_id": "${{ github.run_id }}", "status": "completed"}'
     - name: Send failure notification
       if: failure()
       run: |
-        curl -X POST http://localhost:3001/workflow-status \
+        curl -X POST https://workflow-backend-1.onrender.com/workflow-status \
         -H "Content-Type: application/json" \
         -d '{"run_id": "${{ github.run_id }}", "status": "failed"}'
