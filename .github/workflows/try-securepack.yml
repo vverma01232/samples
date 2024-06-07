@@ -20,10 +20,7 @@ jobs:
     - name: Clone specified repository
       run: |
         git clone ${{ github.event.inputs.repo_url }} repo 
-    - name: Grype installation
-      run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin     
-
+      
     - name: Set up environment variable for directory
       id: set-dir
       run: |
@@ -55,11 +52,3 @@ jobs:
         cd ${{ steps.set-dir.outputs.dir }}
         pack build $image_name_with_tag --builder initializbuildpacks/securepacks
         docker push $image_name_with_tag
-
-    - name: Display Docker Image URI
-      run: |
-        echo "::notice title=Docker Image URI::${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
-
-    - name: Run grype
-      run: |
-          grype ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest     
