@@ -70,9 +70,9 @@ jobs:
           pack build $image_name_with_tag
         else
           echo "Building a Node.js application with static site generation..."
-          pack build $image_name_with_tag --buildpack paketo-buildpacks/web-servers \
+          pack build $image_name_with_tag --buildpack initializ-buildpacks/web-servers \
                                           --env BP_NODE_RUN_SCRIPTS=build \
-                                          --env BP_WEB_SERVER=httpd \
+                                          --env BP_WEB_SERVER=nginx \
                                           --env BP_WEB_SERVER_ROOT=build
         fi
 
