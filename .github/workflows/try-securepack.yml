@@ -20,25 +20,39 @@ jobs:
     - name: Clone specified repository
       run: |
         git clone ${{ github.event.inputs.repo_url }} repo 
-      
+
     - name: Set up environment variable for directory
       id: set-dir
       run: |
         if [ -z "${{ github.event.inputs.desired_directory }}" ]; then
-          echo "##[set-output name=dir;]repo"
+          echo "dir=repo" >> $GITHUB_ENV
         else
-          echo "##[set-output name=dir;]repo/${{ github.event.inputs.desired_directory }}"
+          echo "dir=repo/${{ github.event.inputs.desired_directory }}" >> $GITHUB_ENV
         fi
 
-    - name: Change directory if specified
+    - name: Change to the desired directory
       run: |
-        cd ${{ steps.set-dir.outputs.dir }}
-        
+        cd ${{ env.dir }}
+        echo "Current directory: $(pwd)"
+
+    - name: Check for main.go
+      id: check-main-go
+      run: |
+        if [ -f "${{ env.dir }}/main.go" ]; then
+          echo "app_type=go" >> $GITHUB_ENV
+        else
+          echo "app_type=nodejs" >> $GITHUB_ENV
+        fi
+
     - name: Install Pack CLI
       run: |
         sudo add-apt-repository ppa:cncf-buildpacks/pack-cli -y
         sudo apt-get update
         sudo apt-get install pack-cli -y
+
+    - name: Set default Pack CLI builder
+      run: |
+        pack config default-builder initializbuildpacks/securepacks
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -49,6 +63,17 @@ jobs:
     - name: Build and push Docker image using Buildpacks
       run: |
         image_name_with_tag="${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.image_name }}:latest"
-        cd ${{ steps.set-dir.outputs.dir }}
-        pack build $image_name_with_tag --builder initializbuildpacks/securepacks
+        cd ${{ env.dir }}
+        
+        if [ "${{ env.app_type }}" == "go" ]; then
+          echo "Building a Go application..."
+          pack build $image_name_with_tag
+        else
+          echo "Building a Node.js application with static site generation..."
+          pack build $image_name_with_tag --buildpack paketo-buildpacks/web-servers \
+                                          --env BP_NODE_RUN_SCRIPTS=build \
+                                          --env BP_WEB_SERVER=httpd \
+                                          --env BP_WEB_SERVER_ROOT=build
+        fi
+
         docker push $image_name_with_tag
