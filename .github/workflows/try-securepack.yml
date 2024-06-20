@@ -35,11 +35,14 @@ jobs:
         cd ${{ env.dir }}
         echo "Current directory: $(pwd)"
 
-    - name: Check for main.go
-      id: check-main-go
+    - name: Check for main.go and index.html
+      id: check-files
       run: |
-        if [ -f "${{ env.dir }}/main.go" ]; then
+        cd ${{ env.dir }}
+        if [ -f "main.go" ]; then
           echo "app_type=go" >> $GITHUB_ENV
+        elif [ -f "index.html" ]; then
+          echo "app_type=static_site" >> $GITHUB_ENV
         else
           echo "app_type=nodejs" >> $GITHUB_ENV
         fi
@@ -68,6 +71,11 @@ jobs:
         if [ "${{ env.app_type }}" == "go" ]; then
           echo "Building a Go application..."
           pack build $image_name_with_tag
+        elif [ "${{ env.app_type }}" == "static_site" ]; then
+          echo "Building a static site..."
+          pack build $image_name_with_tag --buildpack initializ-buildpacks/web-servers \
+                                          --env BP_WEB_SERVER=nginx \
+                                          --env BP_WEB_SERVER_ROOT=/
         else
           echo "Building a Node.js application with static site generation..."
           pack build $image_name_with_tag --buildpack initializ-buildpacks/web-servers \
