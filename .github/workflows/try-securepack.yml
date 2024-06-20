@@ -75,7 +75,7 @@ jobs:
           echo "Building a static site..."
           pack build $image_name_with_tag --buildpack initializ-buildpacks/web-servers \
                                           --env BP_WEB_SERVER=nginx \
-                                          --env BP_WEB_SERVER_ROOT=/
+                                          --env BP_WEB_SERVER_ROOT=/workspace
         else
           echo "Building a Node.js application with static site generation..."
           pack build $image_name_with_tag --buildpack initializ-buildpacks/web-servers \
