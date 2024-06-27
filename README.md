@@ -1,16 +1,42 @@
-# SecurePacks: Sample Applications
+# Java Gradle Sample Application
 
-Discover a compilation of sample applications tailored for SecurePacks, ensuring enhanced security through every step of the build process.
+See [prerequisites](https://paketo.io/docs/howto/java/#prerequisites) of this sample.
 
-## Preparatory Steps
+## Building
 
-1. Begin by cloning this repository: `git clone https://github.com/securepacks/samples`
-1. Ensure you have [Pack](https://buildpacks.io/docs/install-pack/) installed for seamless integration.
-
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Build your Secure Image
-
-In actions run "try-securepack" workflow with appropiate details and after workflow success you can pull your image 
+```bash
+pack build applications/gradle
 ```
-docker pull naveen871/< Desired name for the Docker image > 
+
+Alternatively, if you want to attach a `gradle.properties` and/or a `gradle-wrapper.properties` file to pass additional configuration to Gradle (Wrapper).
+
+```bash
+pack build applications/gradle --volume $(pwd)/bindings:/platform/bindings
+```
+
+The command above will use: 
+
+* the sample `gradle.properties` file from this repo. It may be more useful to copy your local `gradle.properties` file first.
+
+```bash
+cp ~/.gradle/gradle.properties java/gradle/bindings/gradle/gradle.properties
+pack build applications/gradle --volume $(pwd)/bindings:/platform/bindings
+```
+
+* the sample `gradle-wrapper.properties` file from this repo. It may be more useful to copy your local `gradle-wrapper.properties` file first.
+
+```bash
+cp ~/gradle/wrapper/gradle-wrapper.properties java/gradle/bindings/gradle-wrapper/gradle-wrapper.properties
+pack build applications/gradle --volume $(pwd)/bindings:/platform/bindings
+
+## Running
+
+```bash
+docker run --rm --tty --publish 8080:8080 applications/gradle
+```
+
+## Viewing
+
+```bash
+curl -s http://localhost:8080/actuator/health | jq .
 ```
