@@ -1,16 +1,25 @@
-# SecurePacks: Sample Applications
+<i> Note: Node.js buildpack is designed to build backend applications that use Node as their server.
+To build frontend applications and serve them with NGINX/HTTPD, please use the Web Servers buildpack </i>
 
-Discover a compilation of sample applications tailored for SecurePacks, ensuring enhanced security through every step of the build process.
+# Node.js Sample app using Npm and a Angular framework
 
-## Preparatory Steps
+## Building
 
-1. Begin by cloning this repository: `git clone https://github.com/securepacks/samples`
-1. Ensure you have [Pack](https://buildpacks.io/docs/install-pack/) installed for seamless integration.
+`pack build angular-sample --buildpack paketo-buildpacks/nodejs --env "BP_NODE_RUN_SCRIPTS=build" --env "NODE_ENV=development"`
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Build your Secure Image
+## Running
 
-In actions run "try-securepack" workflow with appropiate details and after workflow success you can pull your image 
-```
-docker pull naveen871/< Desired name for the Docker image > 
-```
+`docker run --interactive --tty --init --env PORT=8080 --publish 8080:8080 angular-sample`
+
+## Viewing
+
+`curl http://localhost:8080`
+
+### Note
+
+When running containerized Angular applications, be sure to specify the host before running `ng serve` in the `package.json`. For examples:
+
+`ng serve --host 0.0.0.0`
+
+We need the additional flag `--env "NODE_ENV=development"` when running `pack build` since we need the `ng` cli provided in the devDependencies.
+
