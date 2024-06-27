@@ -1,16 +1,21 @@
-# SecurePacks: Sample Applications
+# PHP Sample App using Composer
 
-Discover a compilation of sample applications tailored for SecurePacks, ensuring enhanced security through every step of the build process.
+This sample is a Composer app that serves a PHP app with the PHP built-in web
+server. `--env BP_PHP_WEB_DIR=htdocs` is specified in the build call to tell
+the server where to find files to serve.
 
-## Preparatory Steps
+## Building
 
-1. Begin by cloning this repository: `git clone https://github.com/securepacks/samples`
-1. Ensure you have [Pack](https://buildpacks.io/docs/install-pack/) installed for seamless integration.
+`pack build php-composer-sample --env BP_PHP_WEB_DIR=htdocs --buildpack paketo-buildpacks/php --builder paketobuildpacks/builder-jammy-full`
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Build your Secure Image
+## Running
 
-In actions run "try-securepack" workflow with appropiate details and after workflow success you can pull your image 
-```
-docker pull naveen871/< Desired name for the Docker image > 
-```
+`docker run --interactive --tty --env PORT=8080 --publish 8080:8080 php-composer-sample`
+
+## Viewing
+
+`curl http://localhost:8080`
+
+## Stack Support
+
+The Paketo PHP buildpack requires the Full Jammy Stack. See [stack docs](https://paketo.io/docs/concepts/stacks) for more details
