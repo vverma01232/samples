@@ -1,16 +1,16 @@
-# SecurePacks: Sample Applications
+<i> Note: Node.js buildpack is designed to build backend applications that use Node as their server.
+To build frontend applications and serve them with NGINX/HTTPD, please use the Web Servers buildpack </i>
 
-Discover a compilation of sample applications tailored for SecurePacks, ensuring enhanced security through every step of the build process.
+# Node.js Sample app using Yarn and a React framework
 
-## Preparatory Steps
+## Building
 
-1. Begin by cloning this repository: `git clone https://github.com/securepacks/samples`
-1. Ensure you have [Pack](https://buildpacks.io/docs/install-pack/) installed for seamless integration.
+`pack build react-sample --buildpack paketo-buildpacks/nodejs --env "BP_NODE_RUN_SCRIPTS=build"`
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-## Build your Secure Image
+## Running
 
-In actions run "try-securepack" workflow with appropiate details and after workflow success you can pull your image 
-```
-docker pull naveen871/< Desired name for the Docker image > 
-```
+`docker run --interactive --tty --init --env PORT=8080 --publish 8080:8080 react-sample`
+
+## Viewing
+
+`curl http://localhost:8080`
