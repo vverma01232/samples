@@ -1,1 +1,1 @@
-web: dotnet aspnet
+web: dotnet aspnet.dll
