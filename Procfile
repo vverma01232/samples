@@ -1,1 +1,1 @@
-web: aspnet
+web: dotnet aspnet
